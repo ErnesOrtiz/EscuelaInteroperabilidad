@@ -1,13 +1,67 @@
 import streamlit as st
 import time
+import os
 from datetime import datetime
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 
-st.set_page_config(page_title="Simulador HL7 - Escuela de Interoperabilidad", layout="wide")
+# --- CONFIGURACIÓN DE LA PÁGINA ---
+st.set_page_config(page_title="Academia de Interoperabilidad | Nivel 1", layout="wide")
 
-st.title("🏥 Simulador de Interoperabilidad: Monitor → EMR")
-st.write("Bienvenido Ernesto. Este es el Nivel 1: Envío de Signos Vitales.")
+# --- FUNCIÓN PARA ENVIAR CORREO VÍA BREVO ---
+def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
+    configuration = sib_api_v3_sdk.Configuration()
+    # Render leerá automáticamente la variable BREVO_API_KEY que configuraste
+    api_key = os.getenv('BREVO_API_KEY')
+    configuration.api_key['api-key'] = api_key
+    
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    
+    contenido_html = f"""
+    <html>
+    <body>
+        <h2 style='color: #2e7d32;'>¡Bienvenido a la Academia de Interoperabilidad! 🏥</h2>
+        <p>Hola, es un gusto saludarte. Soy <b>Ernesto Ortiz</b>.</p>
+        <p>Has completado con éxito el <b>Nivel 1</b> usando nuestro simulador HL7.</p>
+        <hr>
+        <p><b>Resumen de tu ejercicio técnico:</b></p>
+        <ul>
+            <li><b>Paciente:</b> {nombre_paciente}</li>
+            <li><b>Hospital:</b> {hospital}</li>
+        </ul>
+        <p>Estás iniciando un camino que muy pocos deciden emprender hacia lo último en tecnología médica. 
+        Pronto tendrás más noticias mías con el material para el <b>Nivel 2 (Conectividad Real con Python)</b>.</p>
+        <br>
+        <p>Saludos,<br><b>Ing. Ernesto Ortiz</b><br>Especialista en Biomédica e Interoperabilidad</p>
+    </body>
+    </html>
+    """
 
-# --- SECCIÓN DE ENTRADA DE DATOS ---
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+        to=[{"email": email_alumno}],
+        # IMPORTANTE: Cambia este correo por el que validaste en Brevo como "Sender"
+        sender={"name": "Ernesto Ortiz | Academia HL7", "email": "tu_correo_verificado@dominio.com"},
+        subject="🚀 ¡Iniciaste tu camino en Interoperabilidad!",
+        html_content=contenido_html
+    )
+
+    try:
+        api_instance.send_transac_email(send_smtp_email)
+        return True
+    except ApiException as e:
+        print(f"Error en Brevo: {e}")
+        return False
+
+# --- INTERFAZ DE USUARIO ---
+st.title("🏥 Academia de Interoperabilidad Sanitaria")
+st.subheader("Nivel 1: De la Cama del Paciente al Expediente Digital")
+
+st.markdown("""
+### ¡Bienvenido al Futuro de la Ingeniería Clínica!
+Basado en estándares reales de la industria (**HL7 v2.5**), este ejercicio te muestra el viaje de los datos:
+1. **Captura** en el monitor. 2. **Codificación** en el Gateway. 3. **Almacenamiento** en el EMR.
+""")
+
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -23,11 +77,10 @@ with col1:
     
     enviar = st.button("🚀 ENVIAR MENSAJE")
 
-# --- PROCESAMIENTO Y VISUALIZACIÓN DEL SIMULADOR ---
+# --- PROCESAMIENTO ---
 if enviar:
-    # Calculamos fecha de nacimiento ficticia basada en la edad
     anio_nac = datetime.now().year - edad
-    fecha_nac = f"{anio_nac}0101" # Formato AAAAMMDD
+    fecha_nac = f"{anio_nac}0101"
     
     with col2:
         st.subheader("2. Gateway (Mensaje HL7)")
@@ -35,32 +88,22 @@ if enviar:
             time.sleep(1)
             fecha_actual = datetime.now().strftime("%Y%m%d%H%M")
             
-            # MSH: El hospital va en el campo 4 (Sending Facility)
             trama = f"MSH|^~\\&|MONITOR_LEON|{hospital.upper()}|||{fecha_actual}||ORU^R01|101|P|2.5\n"
-            
-            # PID: La fecha de nacimiento (edad) va en el campo 7
             trama += f"PID|1||1001||{nombre.upper()}||{fecha_nac}|M\n"
-            
-            # PV1: El área (Patient Visit) va en el campo 3
-            trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||"
-            
-            # OBX: Los signos vitales
-            trama += f"\nOBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
+            trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
+            trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
             
             st.code(trama, language="hl7")
             st.success(f"¡Mensaje enviado desde {area}!")
 
     with col3:
         st.subheader("3. Expediente Digital (EMR)")
-        time.sleep(2)
-        st.info(f"Hospital: **{hospital}**")
+        time.sleep(1.5)
         st.info(f"Paciente: **{nombre}** ({edad} años)")
         st.info(f"Ubicación: **{area}**")
-        
         st.metric(label="Pulso recibido", value=f"{bpm} BPM")
         st.success("✅ Registro almacenado exitosamente")
 
-        # --- AQUÍ QUEDA EL NUEVO CÓDIGO (BOTÓN DE DESCARGA Y CAPTURA) ---
         st.divider()
         
         # Botón de Descarga
@@ -68,21 +111,26 @@ if enviar:
             label="📥 Descargar Trama HL7 (.hl7)",
             data=trama,
             file_name=f"mensaje_{nombre.replace(' ', '_')}.hl7",
-            mime="text/plain",
-            help="Descarga este mensaje para probarlo en validadores externos."
+            mime="text/plain"
         )
 
-        # Formulario de Captura de Correos
+        # Formulario de Captura
         st.write("---")
-        st.write("**📩 ¿Quieres aprender a conectar equipos reales?**")
+        st.write("**📩 Únete a la comunidad de expertos**")
         with st.form("academia_form", clear_on_submit=True):
-            email = st.text_input("Ingresa tu correo para recibir el manual de interoperabilidad:")
+            email = st.text_input("Tu mejor correo:")
             submitted = st.form_submit_button("¡Inscribirme a la Academia!")
+            
             if submitted:
                 if "@" in email:
-                    st.success(f"¡Excelente! Te enviaremos el manual a {email}")
-                    # Aquí podrías guardar el correo en un archivo o base de datos
-                    with open("alumnos.txt", "a") as f:
-                        f.write(f"{datetime.now()}: {email}\n")
+                    with st.spinner('Registrándote en la academia...'):
+                        exito = enviar_bienvenida_brevo(email, nombre, hospital)
+                    
+                    if exito:
+                        st.balloons()
+                        st.markdown(f"### 🚀 ¡Bienvenido, **{email.split('@')[0]}**!")
+                        st.write("Te esperan un emocionante camino hacia lo último en tecnología médica. Revisa tu correo.")
+                    else:
+                        st.warning("Te hemos registrado, pero hubo un detalle al enviar el correo automático. Pronto te contactaré.")
                 else:
                     st.error("Por favor, introduce un correo válido.")
