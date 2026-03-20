@@ -40,7 +40,7 @@ def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{"email": email_alumno}],
         # IMPORTANTE: Cambia este correo por el que validaste en Brevo como "Sender"
-        sender={"name": "Ernesto Ortiz | Academia HL7", "email": "tu_correo_verificado@dominio.com"},
+        sender={"name": "Ernesto Ortiz | Academia HL7", "email": "ernestobiomedico21@gmail.com"},
         subject="🚀 ¡Iniciaste tu camino en Interoperabilidad!",
         html_content=contenido_html
     )
@@ -64,6 +64,22 @@ Basado en estándares reales de la industria (**HL7 v2.5**), este ejercicio te m
 
 col1, col2, col3 = st.columns(3)
 
+with st.sidebar:
+    st.header("⚙️ Configuración del Flujo")
+    auto_mode = st.toggle("Modo Automático (Telemetría)", value=False)
+    timer_segundos = st.select_slider(
+        "Intervalo de actualización (seg)",
+        options=[5, 10, 15, 20, 25, 30],
+        value=10,
+        disabled=not auto_mode
+    )
+    if auto_mode:
+        st.info(f"🔄 Transmitiendo cada {timer_segundos} segundos...")
+
+col1, col2, col3 = st.columns(3)
+
+
+
 with col1:
     st.subheader("1. Monitor de Signos")
     hospital = st.text_input("Nombre del Hospital", "Hospital General León")
@@ -75,10 +91,21 @@ with col1:
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
     
-    enviar = st.button("🚀 ENVIAR MENSAJE")
+    enviar_manual = st.button("🚀 ENVIAR MENSAJE")
 
-# --- PROCESAMIENTO ---
-if enviar:
+
+
+# --- LÓGICA DE DISPARO (TRIGGER) ---
+# Se activa si presionas el botón O si el modo automático está encendido 
+if enviar_manual or auto_mode:
+    
+    # Si es automático, agregamos una pequeña pausa visual para el loop
+    if auto_mode and not enviar_manual:
+        time.sleep(timer_segundos)
+        # Forzamos el refresco para que los bloques 2 y 3 se actualicen
+        st.rerun() 
+
+    # --- PROCESAMIENTO (Este bloque se ejecuta solo al dispararse) ---
     anio_nac = datetime.now().year - edad
     fecha_nac = f"{anio_nac}0101"
     
@@ -97,7 +124,7 @@ if enviar:
             st.success(f"¡Mensaje enviado desde {area}!")
 
     with col3:
-        st.subheader("3. Expediente Digital (EMR)")
+        st.subheader("3. Historial Clínico (HIS)")
         time.sleep(1.5)
         st.info(f"Paciente: **{nombre}** ({edad} años)")
         st.info(f"Ubicación: **{area}**")
