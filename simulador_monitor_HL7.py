@@ -59,3 +59,12 @@ if enviar:
         
         st.metric(label="Pulso recibido", value=f"{bpm} BPM")
         st.success("✅ Registro almacenado exitosamente")
+
+        # Esto genera el archivo para descarga inmediata
+    st.download_button(
+        label="📥 Descargar Mensaje HL7 (.hl7)",
+        data=trama, # La variable 'trama' que construimos arriba
+        file_name=f"mensaje_{nombre.replace(' ', '_')}.hl7",
+        mime="text/plain",
+        help="Haz clic para descargar la trama y probarla en un validador externo."
+    )
