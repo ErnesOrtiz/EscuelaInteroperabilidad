@@ -23,7 +23,7 @@ with col1:
     
     enviar = st.button("🚀 ENVIAR MENSAJE")
 
-# --- PROCESAMIENTO Y VISUALIZACIÓN ---
+# --- PROCESAMIENTO Y VISUALIZACIÓN DEL SIMULADOR---
 if enviar:
     # Calculamos fecha de nacimiento ficticia basada en la edad
     anio_nac = datetime.now().year - edad
