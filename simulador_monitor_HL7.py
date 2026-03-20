@@ -116,7 +116,7 @@ if enviar:
 
         # Formulario de Captura
         st.write("---")
-        st.write("**📩 Quieree seguir aprendiendo**")
+        st.write("**📩 Quieres seguir aprendiendo**")
         with st.form("academia_form", clear_on_submit=True):
             email = st.text_input("Tu mejor correo:")
             submitted = st.form_submit_button("Si quiero!")
