@@ -116,14 +116,14 @@ if enviar:
 
         # Formulario de Captura
         st.write("---")
-        st.write("**📩 Únete a la comunidad de expertos**")
+        st.write("**📩 Quieree seguir aprendiendo**")
         with st.form("academia_form", clear_on_submit=True):
             email = st.text_input("Tu mejor correo:")
-            submitted = st.form_submit_button("¡Inscribirme a la Academia!")
+            submitted = st.form_submit_button("Si quiero!")
             
             if submitted:
                 if "@" in email:
-                    with st.spinner('Registrándote en la academia...'):
+                    with st.spinner('Registrándote...'):
                         exito = enviar_bienvenida_brevo(email, nombre, hospital)
                     
                     if exito:
