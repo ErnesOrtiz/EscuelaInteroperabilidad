@@ -23,7 +23,7 @@ with col1:
     
     enviar = st.button("🚀 ENVIAR MENSAJE")
 
-# --- PROCESAMIENTO Y VISUALIZACIÓN DEL SIMULADOR---
+# --- PROCESAMIENTO Y VISUALIZACIÓN DEL SIMULADOR ---
 if enviar:
     # Calculamos fecha de nacimiento ficticia basada en la edad
     anio_nac = datetime.now().year - edad
@@ -60,11 +60,29 @@ if enviar:
         st.metric(label="Pulso recibido", value=f"{bpm} BPM")
         st.success("✅ Registro almacenado exitosamente")
 
-        # Esto genera el archivo para descarga inmediata
-    st.download_button(
-        label="📥 Descargar Mensaje HL7 (.hl7)",
-        data=trama, # La variable 'trama' que construimos arriba
-        file_name=f"mensaje_{nombre.replace(' ', '_')}.hl7",
-        mime="text/plain",
-        help="Haz clic para descargar la trama y probarla en un validador externo."
-    )
+        # --- AQUÍ QUEDA EL NUEVO CÓDIGO (BOTÓN DE DESCARGA Y CAPTURA) ---
+        st.divider()
+        
+        # Botón de Descarga
+        st.download_button(
+            label="📥 Descargar Trama HL7 (.hl7)",
+            data=trama,
+            file_name=f"mensaje_{nombre.replace(' ', '_')}.hl7",
+            mime="text/plain",
+            help="Descarga este mensaje para probarlo en validadores externos."
+        )
+
+        # Formulario de Captura de Correos
+        st.write("---")
+        st.write("**📩 ¿Quieres aprender a conectar equipos reales?**")
+        with st.form("academia_form", clear_on_submit=True):
+            email = st.text_input("Ingresa tu correo para recibir el manual de interoperabilidad:")
+            submitted = st.form_submit_button("¡Inscribirme a la Academia!")
+            if submitted:
+                if "@" in email:
+                    st.success(f"¡Excelente! Te enviaremos el manual a {email}")
+                    # Aquí podrías guardar el correo en un archivo o base de datos
+                    with open("alumnos.txt", "a") as f:
+                        f.write(f"{datetime.now()}: {email}\n")
+                else:
+                    st.error("Por favor, introduce un correo válido.")
