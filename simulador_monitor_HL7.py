@@ -62,11 +62,12 @@ Basado en estándares reales de la industria (**HL7 v2.5**), este ejercicio te m
 1. **Captura** en el monitor. 2. **Codificación** en el Gateway. 3. **Almacenamiento** en el EMR.
 """)
 
+if 'auto_mode' not in st.session_state:
+    st.session_state.auto_mode = False
+if 'timer_segundos' not in st.session_state:
+    st.session_state.timer_segundos = 10
+
 col1, col2, col3 = st.columns(3)
-
-
-
-
 
 with col1:
     st.subheader("1. Monitor de Signos")
