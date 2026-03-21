@@ -64,19 +64,7 @@ Basado en estándares reales de la industria (**HL7 v2.5**), este ejercicio te m
 
 col1, col2, col3 = st.columns(3)
 
-with st.sidebar:
-    st.header("⚙️ Configuración del Flujo")
-    auto_mode = st.toggle("Modo Automático (Telemetría)", value=False)
-    timer_segundos = st.select_slider(
-        "Intervalo de actualización (seg)",
-        options=[5, 10, 15, 20, 25, 30],
-        value=10,
-        disabled=not auto_mode
-    )
-    if auto_mode:
-        st.info(f"🔄 Transmitiendo cada {timer_segundos} segundos...")
 
-col1, col2, col3 = st.columns(3)
 
 
 
@@ -109,19 +97,37 @@ if enviar_manual or auto_mode:
     anio_nac = datetime.now().year - edad
     fecha_nac = f"{anio_nac}0101"
     
-    with col2:
-        st.subheader("2. Gateway (Mensaje HL7)")
-        with st.spinner('Codificando trama...'):
-            time.sleep(1)
-            fecha_actual = datetime.now().strftime("%Y%m%d%H%M")
-            
-            trama = f"MSH|^~\\&|MONITOR_LEON|{hospital.upper()}|||{fecha_actual}||ORU^R01|101|P|2.5\n"
-            trama += f"PID|1||1001||{nombre.upper()}||{fecha_nac}|M\n"
-            trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
-            trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
-            
-            st.code(trama, language="hl7")
-            st.success(f"¡Mensaje enviado desde {area}!")
+with col2:
+    st.subheader("2. Gateway (Mensaje HL7)")
+
+    # --- Nueva sección de configuración dentro del Gateway ---
+    with st.expander("⚙️ Configuración del Flujo", expanded=False):
+        auto_mode = st.toggle("Modo Automático (Telemetría)", value=False)
+        timer_segundos = st.select_slider(
+            "Intervalo de actualización (seg)",
+            options=[5, 10, 15, 20, 25, 30],
+            value=10,
+            disabled=not auto_mode
+        )
+        if auto_mode:
+            st.info(f"🔄 Transmitiendo cada {timer_segundos}s")
+    
+    # --- Generación de la Trama ---
+    with st.spinner('Codificando trama...'):
+        time.sleep(1)
+        fecha_actual = datetime.now().strftime("%Y%m%d%H%M")
+        
+        trama = f"MSH|^~\\&|MONITOR_LEON|{hospital.upper()}|||{fecha_actual}||ORU^R01|101|P|2.5\n"
+        trama += f"PID|1||1001||{nombre.upper()}||{fecha_nac}|M\n"
+        trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
+        trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
+        
+        st.code(trama, language="hl7")
+        st.success(f"¡Mensaje enviado desde {area}!")
+
+    # Lógica de autorefresh (opcional, requiere streamlit-autorefresh)
+    # if auto_mode:
+    #    st_autorefresh(interval=timer_segundos * 1000, key="gateway_refresh")
 
     with col3:
         st.subheader("3. Historial Clínico (HIS)")
