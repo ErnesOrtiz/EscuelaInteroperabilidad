@@ -140,6 +140,20 @@ with col2:
 
         st.divider()
         
+# --- SECCIÓN DE LA GRÁFICA ---
+    st.write("**📈 Tendencia de Frecuencia Cardíaca**")
+    if len(st.session_state.historial_bpm) > 0:
+        df_bpm = pd.DataFrame(st.session_state.historial_bpm)
+        st.line_chart(df_bpm.set_index("Hora"))
+    else:
+        st.info("Esperando datos para graficar...")
+
+    st.divider()
+    
+    # Botón de descarga y formulario (abreviados para el ejemplo)
+    st.download_button("📥 Descargar HL7", data=trama, file_name="trama.hl7")
+
+
         # Botón de Descarga
         st.download_button(
             label="📥 Descargar Trama HL7 (.hl7)",
