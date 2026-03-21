@@ -40,7 +40,7 @@ def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{"email": email_alumno}],
         # IMPORTANTE: Cambia este correo por el que validaste en Brevo como "Sender"
-        sender={"name": "Ernesto Ortiz | Academia HL7", "email": "tu_correo_verificado@dominio.com"},
+        sender={"name": "Ernesto Ortiz | Academia HL7", "email": "ernestobiomedico21@gmail.com"},
         subject="🚀 ¡Iniciaste tu camino en Interoperabilidad!",
         html_content=contenido_html
     )
