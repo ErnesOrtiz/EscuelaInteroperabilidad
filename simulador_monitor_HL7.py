@@ -100,25 +100,34 @@ with col2:
             if len(st.session_state.historial_bpm) > 15: st.session_state.historial_bpm.pop(0)
 
 with col3:
-    st.subheader("3. Historial Clínico (HIS)")
-    st.info(f"Paciente: **{nombre}**")
-    st.metric(label="Pulso recibido", value=f"{bpm} BPM")
+        st.subheader("3. Historial Clínico (HIS)")
+        time.sleep(0.5) # Reduje el sleep para que no sea tan lenta la carga
+        st.info(f"Paciente: **{nombre}** ({edad} años)")
+        st.info(f"Ubicación: **{area}**")
+        st.metric(label="Pulso recibido", value=f"{bpm} BPM")
+        st.success("✅ Registro almacenado exitosamente")
+        st.divider()
     
     # --- GRÁFICA DE TENDENCIA ---
     st.write("**📈 Tendencia de Telemetría**")
     if st.session_state.historial_bpm:
         df_bpm = pd.DataFrame(st.session_state.historial_bpm)
         st.line_chart(df_bpm.set_index("Hora"))
+    else:
+            st.info("Esperando datos para graficar...")
     
     st.divider()
     
     st.download_button(
         label="📥 Descargar Trama HL7",
         data=trama,
-        file_name=f"mensaje_{nombre.replace(' ', '_')}.hl7"
+        file_name=f"mensaje_{nombre.replace(' ', '_')}.hl7
+        mime="text/plain""
     )
 
     # Formulario de Captura
+    st.write("---")
+    st.write("**📩 ¿Quieres seguir aprendiendo?**")
     with st.form("academia_form", clear_on_submit=True):
         email = st.text_input("Tu mejor correo:")
         submitted = st.form_submit_button("¡Sí quiero!")
