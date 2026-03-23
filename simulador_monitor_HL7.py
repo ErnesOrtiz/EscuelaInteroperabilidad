@@ -12,14 +12,16 @@ st.set_page_config(page_title="Academia de Interoperabilidad | Nivel 1", layout=
 def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
     configuration = sib_api_v3_sdk.Configuration()
     api_key = os.getenv('BREVO_API_KEY')
+    if not api_key:
+        print("ERROR: No se encontró BREVO_API_KEY en el entorno")
+        return False
 
-# Limpiamos cualquier espacio y forzamos que sea String
-if api_key:
+    configuration = sib_api_v3_sdk.Configuration()
+    # Usamos .strip() para eliminar espacios accidentales
     configuration.api_key['api-key'] = str(api_key).strip()
-else:
-    print("ERROR: No se encontró la variable BREVO_API_KEY")
     
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    api_client = sib_api_v3_sdk.ApiClient(configuration)
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
     
     contenido_html = f"""
     <html>
