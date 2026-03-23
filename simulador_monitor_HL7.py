@@ -10,8 +10,8 @@ st.set_page_config(page_title="Academia de Interoperabilidad | Nivel 1", layout=
 
 # --- FUNCIÓN PARA ENVIAR CORREO VÍA BREVO ---
 def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
-configuration = sib_api_v3_sdk.Configuration()
-api_key = os.getenv('BREVO_API_KEY')
+    configuration = sib_api_v3_sdk.Configuration()
+    api_key = os.getenv('BREVO_API_KEY')
 
 # Limpiamos cualquier espacio y forzamos que sea String
 if api_key:
