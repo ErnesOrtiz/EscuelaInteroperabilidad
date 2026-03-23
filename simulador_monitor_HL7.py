@@ -10,14 +10,13 @@ st.set_page_config(page_title="Academia de Interoperabilidad | Nivel 1", layout=
 
 # --- FUNCIÓN PARA ENVIAR CORREO VÍA BREVO ---
 def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
-    configuration = sib_api_v3_sdk.Configuration()
     api_key = os.getenv('BREVO_API_KEY')
     if not api_key:
-        print("ERROR: No se encontró BREVO_API_KEY en el entorno")
+        print("ERROR: No se encontró la variable BREVO_API_KEY")
         return False
 
     configuration = sib_api_v3_sdk.Configuration()
-    # Usamos .strip() para eliminar espacios accidentales
+    # El .strip() elimina espacios invisibles que causan el error 401
     configuration.api_key['api-key'] = str(api_key).strip()
     
     api_client = sib_api_v3_sdk.ApiClient(configuration)
@@ -25,7 +24,7 @@ def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
     
     contenido_html = f"""
     <html>
-    <body>
+    <body style="font-family: sans-serif;">
         <h2 style='color: #2e7d32;'>¡Bienvenido a la Academia de Interoperabilidad! 🏥</h2>
         <p>Hola, es un gusto saludarte. Soy <b>Ernesto Ortiz</b>.</p>
         <p>Has completado con éxito el <b>Nivel 1</b> usando nuestro simulador HL7.</p>
@@ -35,8 +34,7 @@ def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
             <li><b>Paciente:</b> {nombre_paciente}</li>
             <li><b>Hospital:</b> {hospital}</li>
         </ul>
-        <p>Estás iniciando un camino que muy pocos deciden emprender hacia lo último en tecnología médica. 
-        Pronto tendrás más noticias mías con el material para el <b>Nivel 2 (Conectividad Real con Python)</b>.</p>
+        <p>Pronto tendrás más noticias mías con el material para el <b>Nivel 2</b>.</p>
         <br>
         <p>Saludos,<br><b>Ing. Ernesto Ortiz</b><br>Especialista en Biomédica e Interoperabilidad</p>
     </body>
@@ -81,7 +79,6 @@ with col1:
 
 # --- PROCESAMIENTO ---
 if enviar:
-    # Guardamos en session_state para que el formulario de abajo los pueda usar
     st.session_state['nombre_paciente'] = nombre
     st.session_state['hospital_paciente'] = hospital
     
@@ -115,11 +112,10 @@ if enviar:
             mime="text/plain"
         )
 
-# --- FORMULARIO DE REGISTRO (FUERA DEL IF PRINCIPAL) ---
+# --- FORMULARIO DE REGISTRO ---
 st.write("---")
 st.write("**📩 ¿Quieres recibir el material del Nivel 2?**")
 
-# Recuperamos datos de la sesión o usamos valores por defecto si no han enviado nada arriba
 nombre_final = st.session_state.get('nombre_paciente', 'Estudiante')
 hospital_final = st.session_state.get('hospital_paciente', 'Hospital General')
 
@@ -133,8 +129,8 @@ with st.form("academia_form", clear_on_submit=True):
                 exito = enviar_bienvenida_brevo(email, nombre_final, hospital_final)
             if exito:
                 st.balloons()
-                st.success(f"¡Perfecto! Revisa tu correo **{email}**. ¡Nos vemos en el Nivel 2!")
+                st.success(f"¡Perfecto! Revisa tu correo **{email}**.")
             else:
-                st.error("Hubo un detalle con la conexión a Brevo. Revisa los Logs en Render.")
+                st.error("Detalle de conexión. Revisa los Logs en Render.")
         else:
             st.error("Por favor, introduce un correo válido.")
