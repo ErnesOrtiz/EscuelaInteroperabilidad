@@ -81,8 +81,8 @@ with col1:
     
     enviar = st.button("🚀 ENVIAR MENSAJE MANUAL")
 
-    with col_btn2:
-        if st.button("🔄 AUTO (5s)"):
+    
+    if st.button("🔄 AUTO (5s)"):
             st.session_state.auto_monitoreo = True
             
     if st.session_state.auto_monitoreo:
@@ -116,7 +116,7 @@ if enviar:
                 options=[5, 10, 15],
                 value=5
             )
-            
+
             # El bucle del conteo regresivo
             for i in range(intervalo, 0, -1):
                 placeholder_timer.metric(label="Sincronizando en...", value=f"{i}s")
