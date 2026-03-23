@@ -97,6 +97,23 @@ if enviar:
             st.code(trama, language="hl7")
             st.success(f"¡Mensaje enviado desde {area}!")
 
+        # Selector de intervalo de envío
+        intervalo = st.select_slider(
+            "Intervalo de envío (segundos)",
+            options=[5, 10, 15],
+            value=5
+        )
+
+        enviar = st.button("🚀 INICIAR MONITOREO")
+
+        placeholder = st.empty()
+
+        for segundos_restantes in range(intervalo, 0, -1):
+            placeholder_timer.metric("Próximo envío en...", f"{segundos_restantes}s")
+            time.sleep(1)
+        
+        placeholder_timer.empty() # Limpia el contador al terminar
+
     with col3:
         st.subheader("3. Expediente Digital (EMR)")
         time.sleep(1.5)
