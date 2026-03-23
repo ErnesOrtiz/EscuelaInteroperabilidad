@@ -70,6 +70,7 @@ Basado en estándares reales de la industria (**HL7 v2.5**), este ejercicio te m
 
 col1, col2, col3 = st.columns(3)
 
+# --- COLUMNA 1: CONFIGURACIÓN Y CONTROLES ---
 with col1:
     st.subheader("1. Monitor de Signos")
     hospital = st.text_input("Nombre del Hospital", "Hospital General León")
@@ -79,20 +80,37 @@ with col1:
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
     
-    enviar = st.button("🚀 ENVIAR MENSAJE MANUAL")
-
+    # 1. Definimos el intervalo del slider (para el modo manual)
+    intervalo_slider = st.select_slider(
+        "Intervalo de envío manual (segundos)",
+        options=[5, 10, 15],
+        value=5
+    )
     
-    if st.button("🔄 AUTO (5s)"):
-            st.session_state.auto_monitoreo = True
-            
-    if st.session_state.auto_monitoreo:
-        if st.button("🛑 DETENER"):
+    st.write("---")
+    
+    # 2. Lógica de Botones (Sin sub-columnas para evitar el NameError)
+    btn_manual = st.button("🚀 ENVIAR MENSAJE MANUAL")
+    
+    # Control del estado Automático
+    if st.button("🔄 INICIAR MODO AUTOMÁTICO (5s)"):
+        st.session_state.auto_monitoreo = True
+        st.rerun()
+
+    if st.session_state.get('auto_monitoreo', False):
+        if st.button("🛑 DETENER AUTOMÁTICO", type="primary"):
             st.session_state.auto_monitoreo = False
             st.rerun()
-
-    # Definimos la variable 'enviar' para el resto del código
-    enviar = enviar_manual or st.session_state.auto_monitoreo
-
+        
+        # Si el auto está encendido, forzamos los valores
+        intervalo = 5
+        enviar = True
+        st.warning("⚠️ Modo Automático Activo")
+    else:
+        # Si no, usamos los valores del manual
+        intervalo = intervalo_slider
+        enviar = btn_manual
+        
 # --- PROCESAMIENTO ---
 if enviar:
     st.session_state['nombre_paciente'] = nombre
