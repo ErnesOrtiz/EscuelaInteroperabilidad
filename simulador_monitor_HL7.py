@@ -111,6 +111,12 @@ if enviar:
             # Usamos st.empty() para que el número se sobrescriba y no se amontone
             placeholder_timer = st.empty()
             
+            intervalo = st.select_slider(
+                "Intervalo de envío (segundos)",
+                options=[5, 10, 15],
+                value=5
+            )
+            
             # El bucle del conteo regresivo
             for i in range(intervalo, 0, -1):
                 placeholder_timer.metric(label="Sincronizando en...", value=f"{i}s")
@@ -127,11 +133,7 @@ if enviar:
             trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
             trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
             
-            intervalo = st.select_slider(
-                "Intervalo de envío (segundos)",
-                options=[5, 10, 15],
-                value=5
-            )
+
 
             st.code(trama, language="hl7")
             st.success(f"¡Mensaje enviado exitosamente!")
