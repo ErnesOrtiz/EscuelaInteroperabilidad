@@ -11,7 +11,6 @@ st.set_page_config(page_title="Academia de Interoperabilidad | Nivel 1", layout=
 # --- FUNCIÓN PARA ENVIAR CORREO VÍA BREVO ---
 def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
     configuration = sib_api_v3_sdk.Configuration()
-    # Render leerá automáticamente la variable BREVO_API_KEY que configuraste
     api_key = os.getenv('BREVO_API_KEY')
     configuration.api_key['api-key'] = api_key
     
@@ -39,7 +38,6 @@ def enviar_bienvenida_brevo(email_alumno, nombre_paciente, hospital):
 
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{"email": email_alumno}],
-        # IMPORTANTE: Cambia este correo por el que validaste en Brevo como "Sender"
         sender={"name": "Ernesto Ortiz | Academia HL7", "email": "ernestobiomedico21@gmail.com"},
         subject="🚀 ¡Iniciaste tu camino en Interoperabilidad!",
         html_content=contenido_html
@@ -68,17 +66,18 @@ with col1:
     st.subheader("1. Monitor de Signos")
     hospital = st.text_input("Nombre del Hospital", "Hospital General León")
     area = st.selectbox("Área / Unidad", ["Urgencias", "UCI", "Quirófano", "Piso 3"])
-    
     st.divider()
-    
     nombre = st.text_input("Paciente", "Juan Perez")
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
-    
     enviar = st.button("🚀 ENVIAR MENSAJE")
 
 # --- PROCESAMIENTO ---
 if enviar:
+    # Guardamos en session_state para que el formulario de abajo los pueda usar
+    st.session_state['nombre_paciente'] = nombre
+    st.session_state['hospital_paciente'] = hospital
+    
     anio_nac = datetime.now().year - edad
     fecha_nac = f"{anio_nac}0101"
     
@@ -87,12 +86,10 @@ if enviar:
         with st.spinner('Codificando trama...'):
             time.sleep(1)
             fecha_actual = datetime.now().strftime("%Y%m%d%H%M")
-            
             trama = f"MSH|^~\\&|MONITOR_LEON|{hospital.upper()}|||{fecha_actual}||ORU^R01|101|P|2.5\n"
             trama += f"PID|1||1001||{nombre.upper()}||{fecha_nac}|M\n"
             trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
             trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
-            
             st.code(trama, language="hl7")
             st.success(f"¡Mensaje enviado desde {area}!")
 
@@ -103,10 +100,7 @@ if enviar:
         st.info(f"Ubicación: **{area}**")
         st.metric(label="Pulso recibido", value=f"{bpm} BPM")
         st.success("✅ Registro almacenado exitosamente")
-
         st.divider()
-        
-        # Botón de Descarga
         st.download_button(
             label="📥 Descargar Trama HL7 (.hl7)",
             data=trama,
@@ -114,11 +108,11 @@ if enviar:
             mime="text/plain"
         )
 
-# --- ESTO VA FUERA DEL IF (A NIVEL PRINCIPAL) ---
+# --- FORMULARIO DE REGISTRO (FUERA DEL IF PRINCIPAL) ---
 st.write("---")
 st.write("**📩 ¿Quieres recibir el material del Nivel 2?**")
 
-# Recuperamos datos de la sesión o usamos valores por defecto
+# Recuperamos datos de la sesión o usamos valores por defecto si no han enviado nada arriba
 nombre_final = st.session_state.get('nombre_paciente', 'Estudiante')
 hospital_final = st.session_state.get('hospital_paciente', 'Hospital General')
 
@@ -129,14 +123,11 @@ with st.form("academia_form", clear_on_submit=True):
     if submitted:
         if "@" in email:
             with st.spinner('Procesando registro...'):
-                # Usamos los datos guardados en la sesión
                 exito = enviar_bienvenida_brevo(email, nombre_final, hospital_final)
-            
             if exito:
                 st.balloons()
                 st.success(f"¡Perfecto! Revisa tu correo **{email}**. ¡Nos vemos en el Nivel 2!")
             else:
-                # Cambié esto a st.error para que veas si Brevo rechaza la API Key
                 st.error("Hubo un detalle con la conexión a Brevo. Revisa los Logs en Render.")
         else:
             st.error("Por favor, introduce un correo válido.")
