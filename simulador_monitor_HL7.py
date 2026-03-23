@@ -5,6 +5,9 @@ from datetime import datetime
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 
+if 'auto_monitoreo' not in st.session_state:
+    st.session_state.auto_monitoreo = False
+
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="Academia de Interoperabilidad | Nivel 1", layout="wide")
 
@@ -76,7 +79,19 @@ with col1:
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
     
-    enviar = st.button("🚀 ENVIAR MENSAJE")
+    enviar = st.button("🚀 ENVIAR MENSAJE MANUAL")
+
+    with col_btn2:
+        if st.button("🔄 AUTO (5s)"):
+            st.session_state.auto_monitoreo = True
+            
+    if st.session_state.auto_monitoreo:
+        if st.button("🛑 DETENER"):
+            st.session_state.auto_monitoreo = False
+            st.rerun()
+
+    # Definimos la variable 'enviar' para el resto del código
+    enviar = enviar_manual or st.session_state.auto_monitoreo
 
 # --- PROCESAMIENTO ---
 if enviar:
