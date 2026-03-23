@@ -80,19 +80,11 @@ with col1:
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
     
-    # 1. Definimos el intervalo del slider (para el modo manual)
-    intervalo_slider = st.select_slider(
-        "Intervalo de envío manual (segundos)",
-        options=[5, 10, 15],
-        value=5
-    )
-    
     st.write("---")
     
-    # 2. Lógica de Botones (Sin sub-columnas para evitar el NameError)
+    # Botones de control
     btn_manual = st.button("🚀 ENVIAR MENSAJE MANUAL")
     
-    # Control del estado Automático
     if st.button("🔄 INICIAR MODO AUTOMÁTICO (5s)"):
         st.session_state.auto_monitoreo = True
         st.rerun()
@@ -102,15 +94,15 @@ with col1:
             st.session_state.auto_monitoreo = False
             st.rerun()
         
-        # Si el auto está encendido, forzamos los valores
-        intervalo = 5
+        # Modo AUTO: Fijo a 5 segundos de refresco
+        intervalo_monitoreo = 5
         enviar = True
-        st.warning("⚠️ Modo Automático Activo")
+        st.warning("⚠️ Transmitiendo cada 5s")
     else:
-        # Si no, usamos los valores del manual
-        intervalo = intervalo_slider
+        # Modo MANUAL: Solo se envía al presionar el botón
+        intervalo_monitoreo = 0 # No hay espera de refresco
         enviar = btn_manual
-        
+
 # --- PROCESAMIENTO ---
 if enviar:
     st.session_state['nombre_paciente'] = nombre
@@ -120,6 +112,48 @@ if enviar:
     fecha_nac = f"{anio_nac}0101"
     
     with col2:
+        st.subheader("2. Gateway (Mensaje HL7)")
+        
+        # Temporizador ALTERABLE por el usuario en la Columna 2
+        latencia_gateway = st.select_slider(
+            "Retraso de procesamiento (Gateway):",
+            options=[2, 5, 10],
+            value=2,
+            key="latencia_g"
+        )
+        
+        contenedor_timer = st.empty()
+        
+        # Conteo regresivo visual de la latencia seleccionada
+        for i in range(latencia_gateway, 0, -1):
+            contenedor_timer.metric(label="Procesando trama HL7...", value=f"{i}s")
+            time.sleep(1)
+        
+        contenedor_timer.empty()
+        
+        # Generación de la trama HL7
+        with st.spinner('Codificando...'):
+            fecha_actual = datetime.now().strftime("%Y%m%d%H%M")
+            trama = f"MSH|^~\\&|MONITOR_LEON|{hospital.upper()}|||{fecha_actual}||ORU^R01|101|P|2.5\n"
+            trama += f"PID|1||1001||{nombre.upper()}||{fecha_nac}|M\n"
+            trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
+            trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
+            
+            st.code(trama, language="hl7")
+            st.success("✅ Trama enviada al EMR")
+
+    with col3:
+        st.subheader("3. Expediente Digital (EMR)")
+        # Simulación de recepción
+        st.info(f"Paciente: **{nombre}**")
+        st.metric(label="Signos Recibidos", value=f"{bpm} BPM")
+        st.success("✔ Registro guardado")
+
+    # --- LÓGICA DE RE-ENVÍO (Refresco automático) ---
+    if st.session_state.get('auto_monitoreo', False):
+        # Espera los 5 segundos fijos del "Monitor" antes de volver a empezar
+        time.sleep(5)
+        st.rerun()
         st.subheader("2. Gateway (Mensaje HL7)")
         
         # Creamos un contenedor limpio
