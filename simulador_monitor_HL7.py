@@ -75,6 +75,11 @@ with col1:
     nombre = st.text_input("Paciente", "Juan Perez")
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
+    intervalo = st.select_slider(
+        "Intervalo de envío (segundos)",
+        options=[5, 10, 15],
+        value=5
+    )
     enviar = st.button("🚀 ENVIAR MENSAJE")
 
 # --- PROCESAMIENTO ---
@@ -113,7 +118,7 @@ if enviar:
             
             st.code(trama, language="hl7")
             st.success(f"¡Mensaje enviado exitosamente!")
-            
+
     with col3:
         st.subheader("3. Expediente Digital (EMR)")
         time.sleep(1.5)
