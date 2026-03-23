@@ -75,11 +75,7 @@ with col1:
     nombre = st.text_input("Paciente", "Juan Perez")
     edad = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=35)
     bpm = st.slider("Frecuencia Cardíaca (BPM)", 40, 180, 75)
-    intervalo = st.select_slider(
-        "Intervalo de envío (segundos)",
-        options=[5, 10, 15],
-        value=5
-    )
+    
     enviar = st.button("🚀 ENVIAR MENSAJE")
 
 # --- PROCESAMIENTO ---
@@ -116,6 +112,12 @@ if enviar:
             trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
             trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
             
+            intervalo = st.select_slider(
+                "Intervalo de envío (segundos)",
+                options=[5, 10, 15],
+                value=5
+            )
+
             st.code(trama, language="hl7")
             st.success(f"¡Mensaje enviado exitosamente!")
 
