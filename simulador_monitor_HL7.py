@@ -114,23 +114,29 @@ if enviar:
             mime="text/plain"
         )
 
-# Formulario de Captura
+# --- ESTO VA FUERA DEL IF (A NIVEL PRINCIPAL) ---
 st.write("---")
-st.write("**📩 ¿Quieres seguir aprendiendo?**")
-    with st.form("academia_form", clear_on_submit=True):
-        email = st.text_input("Tu mejor correo:")
-        submitted = st.form_submit_button("Si quiero!")
+st.write("**📩 ¿Quieres recibir el material del Nivel 2?**")
+
+# Recuperamos datos de la sesión o usamos valores por defecto
+nombre_final = st.session_state.get('nombre_paciente', 'Estudiante')
+hospital_final = st.session_state.get('hospital_paciente', 'Hospital General')
+
+with st.form("academia_form", clear_on_submit=True):
+    email = st.text_input("Tu mejor correo para enviarte el Nivel 2:")
+    submitted = st.form_submit_button("¡Si, enviame el material!")
+    
+    if submitted:
+        if "@" in email:
+            with st.spinner('Procesando registro...'):
+                # Usamos los datos guardados en la sesión
+                exito = enviar_bienvenida_brevo(email, nombre_final, hospital_final)
             
-            if submitted:
-            if "@" in email:
-                with st.spinner('Registrándote...'):
-                        exito = enviar_bienvenida_brevo(email, nombre, hospital)
-                    
-                if exito:
-                    st.balloons()
-                    st.markdown(f"### 🚀 ¡Bienvenido, **{email.split('@')[0]}**!")
-                    st.write("Te esperan un emocionante camino hacia lo último en tecnología médica. Revisa tu correo.")
-                else:
-                    st.warning("Te hemos registrado, pero hubo un detalle al enviar el correo automático. Pronto te contactaré.")
+            if exito:
+                st.balloons()
+                st.success(f"¡Perfecto! Revisa tu correo **{email}**. ¡Nos vemos en el Nivel 2!")
             else:
-              st.error("Por favor, introduce un correo válido.")
+                # Cambié esto a st.error para que veas si Brevo rechaza la API Key
+                st.error("Hubo un detalle con la conexión a Brevo. Revisa los Logs en Render.")
+        else:
+            st.error("Por favor, introduce un correo válido.")
