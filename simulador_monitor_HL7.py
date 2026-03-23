@@ -114,23 +114,23 @@ if enviar:
             mime="text/plain"
         )
 
-        # Formulario de Captura
-        st.write("---")
-        st.write("**📩 ¿Quieres seguir aprendiendo?**")
-        with st.form("academia_form", clear_on_submit=True):
-            email = st.text_input("Tu mejor correo:")
-            submitted = st.form_submit_button("Si quiero!")
+# Formulario de Captura
+st.write("---")
+st.write("**📩 ¿Quieres seguir aprendiendo?**")
+    with st.form("academia_form", clear_on_submit=True):
+        email = st.text_input("Tu mejor correo:")
+        submitted = st.form_submit_button("Si quiero!")
             
             if submitted:
-                if "@" in email:
-                    with st.spinner('Registrándote...'):
+            if "@" in email:
+                with st.spinner('Registrándote...'):
                         exito = enviar_bienvenida_brevo(email, nombre, hospital)
                     
-                    if exito:
-                        st.balloons()
-                        st.markdown(f"### 🚀 ¡Bienvenido, **{email.split('@')[0]}**!")
-                        st.write("Te esperan un emocionante camino hacia lo último en tecnología médica. Revisa tu correo.")
-                    else:
-                        st.warning("Te hemos registrado, pero hubo un detalle al enviar el correo automático. Pronto te contactaré.")
+                if exito:
+                    st.balloons()
+                    st.markdown(f"### 🚀 ¡Bienvenido, **{email.split('@')[0]}**!")
+                    st.write("Te esperan un emocionante camino hacia lo último en tecnología médica. Revisa tu correo.")
                 else:
-                    st.error("Por favor, introduce un correo válido.")
+                    st.warning("Te hemos registrado, pero hubo un detalle al enviar el correo automático. Pronto te contactaré.")
+            else:
+              st.error("Por favor, introduce un correo válido.")
