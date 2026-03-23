@@ -87,33 +87,33 @@ if enviar:
     
     with col2:
         st.subheader("2. Gateway (Mensaje HL7)")
-        with st.spinner('Codificando trama...'):
-            time.sleep(1)
+        
+        # Creamos un contenedor limpio
+        contenedor_dinamico = st.container()
+        
+        with contenedor_dinamico:
+            # Usamos st.empty() para que el número se sobrescriba y no se amontone
+            placeholder_timer = st.empty()
+            
+            # El bucle del conteo regresivo
+            for i in range(intervalo, 0, -1):
+                placeholder_timer.metric(label="Sincronizando en...", value=f"{i}s")
+                time.sleep(1)
+            
+            # Borramos el contador para dar paso a la trama
+            placeholder_timer.empty()
+        
+        # Ahora sí, generamos la trama
+        with st.spinner('Codificando trama HL7...'):
             fecha_actual = datetime.now().strftime("%Y%m%d%H%M")
             trama = f"MSH|^~\\&|MONITOR_LEON|{hospital.upper()}|||{fecha_actual}||ORU^R01|101|P|2.5\n"
             trama += f"PID|1||1001||{nombre.upper()}||{fecha_nac}|M\n"
             trama += f"PV1|1|I|{area.upper()}^^||||||||||||||||\n"
             trama += f"OBX|1|NM|BPM^Frecuencia||{bpm}|bpm|||F"
+            
             st.code(trama, language="hl7")
-            st.success(f"¡Mensaje enviado desde {area}!")
-
-        # Selector de intervalo de envío
-        intervalo = st.select_slider(
-            "Intervalo de envío (segundos)",
-            options=[5, 10, 15],
-            value=5
-        )
-
-        enviar = st.button("🚀 INICIAR MONITOREO")
-
-        placeholder = st.empty()
-
-        for segundos_restantes in range(intervalo, 0, -1):
-            placeholder_timer.metric("Próximo envío en...", f"{segundos_restantes}s")
-            time.sleep(1)
-        
-        placeholder_timer.empty() # Limpia el contador al terminar
-
+            st.success(f"¡Mensaje enviado exitosamente!")
+            
     with col3:
         st.subheader("3. Expediente Digital (EMR)")
         time.sleep(1.5)
